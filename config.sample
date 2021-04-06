@@ -1,0 +1,70 @@
+;
+// change credentials for your user and don't commit
+const config = {
+    backendPort: 4000,
+    serviceBaseUrl: "https://xchain.biz",
+    projectDirPath: __dirname,//don't change
+    logsDirPath: `${__dirname}/logs`,
+
+    maxPostRequestSize: "20mb",
+    accountMaxLoginAttempts: 5,
+    accountBlockLife: 15, // minutes
+    emailVerifyTokenLife: 6, // hours
+    authHeaderName: "authorization",
+    env: (process.env.NODE_ENV || "development").toLowerCase(),
+
+    db: {
+        username: "postgres",
+        password: "postgres",
+        database: "xchain",
+        schema: "public",
+        host: "127.0.0.1",
+        port: 5432,
+        dialect: "postgres",
+        shouldLog: false,
+        shouldForceDBSync: false,
+        shouldSeedDemoData: false,
+    },
+
+    templatesDirPath: `${__dirname}/resources`,
+    exploToolsDirPath: `${__dirname}/explo-tools`,
+    exploProcessingDirPath: `${__dirname}/explo-processing`,
+    contributionsStandardDeviation: 0.08,
+    processingCmdPrefix: "nice -10 ",// nice -10 sets low priority for the process
+
+    JWTOptions : {
+        issuer: "xChain",
+        subject: "support@xchain.biz",
+        audience: "http://xchain.biz",
+        algorithm: "RS256",
+        expiresIn: "1h",
+    },
+    JWTKeysDir:`${__dirname}/keys`,
+
+    mailGlobalInfo: {
+        product: "xChain",
+        replyEmail: "support@xchain.biz",
+        logo: "https://i.imgur.com/KO1vcE9.png",
+        address: "xChain Ltd, Some Avenue. City Some, USA",
+    },
+
+    sendMailService: {
+        service: "gmail",
+        auth: {
+            user: "support@xchain.biz",
+            pass: "pass",
+        },
+    },
+};
+
+config.dbTest = {...config.db, database: "xchainTest", shouldForceDBSync: true, shouldSeedDemoData: true};
+
+config.isTestRun = config.env === "test";
+config.isDev = config.env === "development";
+config.chainUrl = config.isDev ? "http://localhost:3300" : `${config.serviceBaseUrl}/chain`;
+config.backendUrl = config.isDev ? "http://localhost:4000" : `${config.serviceBaseUrl}/api`;
+config.guiUrl = config.isDev ? "http://localhost:3000" : config.serviceBaseUrl;
+config.origins = [config.guiUrl, config.chainUrl];
+
+
+module.exports = config;
