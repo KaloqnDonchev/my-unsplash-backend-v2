@@ -1,13 +1,20 @@
-const {ValidationError: sequelizeError} = require("sequelize");
-const {keccak256} = require("js-sha3");
-const {jwt} = require("./jwt");
-const {logger} = require("../logger");
-const {xChainError} = require("../errors");
+const { ValidationError: sequelizeError } = require("sequelize");
+const { keccak256 } = require("js-sha3");
+const { jwt } = require("./jwt.js");
+const { logger } = require("../logger");
+const { ReCheckError } = require("../errors");
+const constants = require("./constants.js");
+const { defaultLanguage, supportedLanguage } = require("../config.js");
 
-function processControllerError(res, error) {
+async function processControllerError(req, res, error) {
     logIfNecessary(error);
 
     if (error instanceof sequelizeError) {
+        return res.status(422).send(processValidationError(error));
+    }
+
+    if (error instanceof ReCheckError) {
+        error = await getErrorCorrectLanguage(req, error);
         return res.status(422).send(processValidationError(error));
     }
 
@@ -16,6 +23,24 @@ function processControllerError(res, error) {
     }
 
     return res.send(responseObj(null, "error", error.message));
+
+    async function getErrorCorrectLanguage(req, error) {
+        const { UsersService } = require("../services");
+        const { userId } = req;
+        let { language } = req;
+        if (userId) {
+            try {
+                language = await UsersService.getUserLanguage(userId);
+            } catch (ignored) {
+                logIfNecessary(ignored, true);
+            }
+        }
+        if (!supportedLanguage.includes(language)) {
+            language = defaultLanguage;
+        }
+        error.message = error.message[language];
+        return error;
+    }
 }
 
 function processValidationError(err) {
@@ -25,7 +50,7 @@ function processValidationError(err) {
             for (let i = 0; i < err.errors.length; i++) {
                 arr.push({
                     field: err.errors[i].path,
-                    message: err.errors[i].message,
+                    message: err.errors[i].message
                 });
             }
             return arr;
@@ -33,7 +58,7 @@ function processValidationError(err) {
 
         return {
             field: err.errors[0].path,
-            message: err.errors[0].message,
+            message: err.errors[0].message
         };
     }
 
@@ -41,13 +66,13 @@ function processValidationError(err) {
 }
 
 function logIfNecessary(error, shouldLog = false) {
-    if (shouldLog || (!(error instanceof sequelizeError) && !(error instanceof xChainError))) {
+    if (shouldLog || (!(error instanceof sequelizeError) && !(error instanceof ReCheckError))) {
         logger.error(error);
     }
 }
 
 function responseObj(data = {}, status = "success", message = "") {
-    return {status, message, data};
+    return { status, message, data };
 }
 
 function requireReqAuth(
@@ -55,10 +80,10 @@ function requireReqAuth(
     next,
     isBodyRequired = false,
     areParamsRequired = false,
-    shouldHaveUserId = true,
+    shouldHaveUserId = true
 ) {
     if (isNullAny(req.userId) && shouldHaveUserId) {
-        return next({name: "UnauthorizedError"});
+        return next({ name: "UnauthorizedError" });
     }
 
     if (isBodyRequired) {
@@ -101,8 +126,7 @@ function isNullAny(...args) {
                     // is not a number and can be parsed as null date 1970
                     return true;
                 }
-            } catch (ignored) {
-            }
+            } catch (ignored) {}
         }
 
         try {
@@ -111,8 +135,7 @@ function isNullAny(...args) {
                 // recursive check for stringified object
                 return true;
             }
-        } catch (ignored) {
-        }
+        } catch (ignored) {}
 
         // check for hashes of null values
         if (
@@ -125,7 +148,7 @@ function isNullAny(...args) {
                 "0x019726c6babc1de231f26fd6cbb2df2c912784a2e1ba55295496269a6d3ff651", // "undefined"
                 "0x681afa780d17da29203322b473d3f210a7d621259a4e6ce9e403f5a266ff719a", // " "
                 "0xfc6664300e2ce056cb146b05edef3501ff8bd027c49a8dde866901679a24fb7e", // new Date(0).toString()
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
             ].includes(current)
         ) {
             return true;
@@ -162,7 +185,7 @@ function filterObjectOrArrayObjsProps(objOrArrayObj, keys, shouldClone = true) {
         objOrArrayObj = JSON.parse(JSON.stringify(objOrArrayObj));
     }
 
-    let isArray = Array.isArray(objOrArrayObj);
+    const isArray = Array.isArray(objOrArrayObj);
     if (!isArray) {
         objOrArrayObj = [objOrArrayObj];
     }
@@ -171,8 +194,8 @@ function filterObjectOrArrayObjsProps(objOrArrayObj, keys, shouldClone = true) {
         keys = [keys];
     }
 
-    keys.forEach(key => {
-        objOrArrayObj.map(obj => {
+    keys.forEach((key) => {
+        objOrArrayObj.map((obj) => {
             if (!isNullAny(obj) && typeof obj === "object") {
                 for (const prop in obj) {
                     if (!obj.hasOwnProperty(prop)) continue;
@@ -215,7 +238,6 @@ function getTimeMinuteBeforeNow() {
     return now;
 }
 
-
 module.exports = {
     processControllerError,
     processValidationError,
@@ -231,4 +253,5 @@ module.exports = {
     getHash,
     convertSequelizeData,
     getTimeMinuteBeforeNow,
+    constants
 };

@@ -1,8 +1,11 @@
 module.exports = {
-    xChainError: require("./default.js"),
-    UserServiceError: require("./user.js").UserServiceError,
-    ProjectServiceError: require("./project.js").ProjectServiceError,
-    DocumentServiceError: require("./document.js").DocumentServiceError,
-    TemplateServiceError: require("./template.js").TemplateServiceError,
-    AnalyticsServiceError: require("./analytics.js").AnalyticsServiceError,
+    ReCheckError: require("./default.js"),
+    ApiError: require("./api-error.js"),
+    ChainError: require("./chain-error.js"),
+    ControllerError: require("./controller-error.js"),
+    DatabaseError: require("./database-error.js"),
+    EmailError: require("./email-error.js"),
+    SchedulerError: require("./scheduler-error.js"),
+    ServiceError: require("./service-error.js"),
+    errorMessages: require("./error-messages.js")
 };

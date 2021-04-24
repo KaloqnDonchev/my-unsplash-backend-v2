@@ -1,9 +1,9 @@
-class xChainError extends Error {
-    constructor(message, code, field = null) {
+class ReCheckError extends Error {
+    constructor(errorMessageObj, field = null) {
         super();
-        this.message = message;
+        this.message = errorMessageObj.message;
         this.status = "error";
-        this.code = code;
+        this.code = errorMessageObj.code;
 
         if (field) {
             this.field = field;
@@ -11,4 +11,4 @@ class xChainError extends Error {
     }
 }
 
-module.exports = xChainError;
+module.exports = ReCheckError;

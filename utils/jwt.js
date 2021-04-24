@@ -1,29 +1,29 @@
-const {sign, verify, decode} = require("jsonwebtoken");
+const { sign, verify, decode } = require("jsonwebtoken");
 const fs = require("fs");
 
-const config = require("../config");
+const JWTConfig = require("../config").server.JWT;
 
-const privateKey = fs.readFileSync(`${config.JWTKeysDir}/private.key`, "utf8");
-const publicKey = fs.readFileSync(`${config.JWTKeysDir}/public.key`, "utf8");
+const privateKey = fs.readFileSync(`${JWTConfig.JWTKeysDir}/private.key`, "utf8");
+const publicKey = fs.readFileSync(`${JWTConfig.JWTKeysDir}/public.key`, "utf8");
 
 // SIGNING OPTIONS
-const options = config.JWTOptions;
+const options = JWTConfig.JWTOptions;
 
 const jwt = {
     sign: (payload) => {
         // Token signing options
         const signOptions = {
             ...options,
-            expiresIn: "1h", // 1 hour validity
+            expiresIn: "1h" // 1 hour validity
         };
 
-        return sign({payload}, privateKey, signOptions);
+        return sign({ payload }, privateKey, signOptions);
     },
     verify: (token, cb) => {
         const verifyOptions = {
             ...options,
             expiresIn: "1h",
-            algorithm: ["RS256"],
+            algorithm: ["RS256"]
         };
 
         try {
@@ -33,11 +33,11 @@ const jwt = {
         }
     },
     // returns null if token is invalid
-    decode: (token) => decode(token, {complete: true}),
+    decode: (token) => decode(token, { complete: true })
 };
 
 function checkAuth(req, res, next) {
-    const authHeader = req.headers[config.authHeaderName];
+    const authHeader = req.headers[JWTConfig.authHeaderName];
 
     if (authHeader) {
         // TODO check if split has [1]
@@ -46,18 +46,17 @@ function checkAuth(req, res, next) {
         jwt.verify(token, (err, result) => {
             if (err) {
                 console.log(err);
-                return next({name: "UnauthorizedError"});
+                return next({ name: "UnauthorizedError" });
             }
 
             req.userId = result.payload;
             next();
         });
     } else {
-        return next({name: "UnauthorizedError"});
+        return next({ name: "UnauthorizedError" });
     }
 }
-
 module.exports = {
     jwt,
-    checkAuth,
+    checkAuth
 };

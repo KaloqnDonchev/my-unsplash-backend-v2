@@ -2,7 +2,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 
-const {JWTKeysDir} = require("./config.js");
+const {JWTKeysDir} = require("./config.js").server.JWT;
 
 
 const {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {modulusLength: 1024})

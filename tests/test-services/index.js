@@ -1,4 +1,3 @@
-;
 module.exports = {
     users: require("./user-management.js"),
     userInfo: require("./user-info.js"),
@@ -20,5 +19,5 @@ module.exports = {
     templatesFoFFund: require("./templates-FoF-fund.js"),
     templatesRealFund: require("./templates-Real-fund.js"),
     sizeRanges: require("./size-ranges.js"),
-    leverageRanges: require("./leverage-ranges.js"),
-}
+    leverageRanges: require("./leverage-ranges.js")
+};
