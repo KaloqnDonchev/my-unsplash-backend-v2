@@ -4,11 +4,29 @@ const swaggerUIExpress = require("swagger-ui-express");
 const config = require("../../config.js");
 
 const reusableDefinitions = {
-    securitySchemes: {
-        bearerAuth: {
-            type: "http",
-            scheme: "Bearer",
-            bearerFormat: "JWT"
+    requestBodies: {
+        uploadImage: {
+            required: true,
+            description: "JSON object for upload image.",
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            label: { type: "string" },
+                            type: { type: "string" },
+                            sizeBytes: { type: "integer" },
+                            data: { type: "integer" }
+                        }
+                    },
+                    example: {
+                        label: "snimka",
+                        type: "image/jpeg",
+                        sizeBytes: 500,
+                        data: 1273868123
+                    }
+                }
+            }
         }
     }
 };
@@ -18,10 +36,10 @@ const swaggerOptions = {
         openapi: "3.0.0",
         info: {
             version: "1.0.0",
-            title: "xChain API",
-            description: "xChain Prototype API",
+            title: "MyUnsplash API",
+            description: "MyUnsplash Prototype API",
             contact: {
-                name: "xChain LTD"
+                name: "MyUnsplash LTD"
             }
         },
         schemes: ["http"],
@@ -29,15 +47,7 @@ const swaggerOptions = {
         produces: ["application/json"],
         servers: [
             {
-                url: config.server.backendPort,
-                description: "Default server"
-            },
-            {
-                url: "https://beta.recheck.io",
-                description: "xChain DEV Server"
-            },
-            {
-                url: `http://localhost:${config.server.backendPort}`,
+                url: `http://localhost:${config.backendPort}`,
                 description: "Local server"
             }
         ],

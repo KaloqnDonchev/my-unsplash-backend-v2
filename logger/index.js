@@ -2,7 +2,7 @@ const fs = require("fs");
 const { createLogger, transports, format } = require("winston");
 require("winston-daily-rotate-file");
 
-const { logsDirPath, projectDirPath, isTestRun } = require("../config.js");
+const { logsDirPath, projectDirPath } = require("../config.js");
 
 if (!fs.existsSync(logsDirPath)) {
     fs.mkdirSync(logsDirPath);
@@ -16,10 +16,6 @@ function customLogFormat() {
         const dateTime = timestamp.replace("T", " ").replace("Z", "");
         const extraArgs = Object.keys(args).length > 0 ? JSON.stringify(args, null, 4) : "";
         let logType = level.toLowerCase() === "silly" ? "SEQUELIZE" : level.toUpperCase();
-
-        if (isTestRun) {
-            logType = `TEST - ${logType}`;
-        }
 
         return `[${logType}][${dateTime}][${callerInfo.callerLocation}][${
             callerInfo.callerName

@@ -1,51 +1,33 @@
 const { exec } = require("child_process");
-const { Sequelize, ConnectionError } = require("sequelize");
-const dbConfig = require("./config.js");
+const { Sequelize } = require("sequelize");
+const { db } = require("../config.js");
 const modelDefiners = require("./models");
-const { applyDBRelations } = require("./relations");
 const { logger } = require("../logger");
 
 let isFirstDbConnectionError = true;
 
-const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
-    host: dbConfig.host,
-    dialect: dbConfig.dialect,
-    logging: dbConfig.shouldLog ? (error) => logger.sequelize(error) : false,
+const sequelize = new Sequelize(db.database, db.username, db.password, {
+    host: db.host,
+    dialect: db.dialect,
+    logging: db.shouldLog ? (error) => console.log(error) : false,
     define: {
         timestamps: true,
         freezeTableName: true
     }
 });
-try {
-    Object.values(modelDefiners).forEach((m) => m(sequelize));
-} catch (e) {
-    console.log(e);
-}
 
-applyDBRelations(sequelize);
+Object.values(modelDefiners).forEach((m) => m(sequelize));
 
 async function startDBConnection() {
-    return new Promise((resolve, reject) => {
+    new Promise((resolve, reject) => {
         sequelize
             .authenticate()
             .then(() => {
-                logger.info("DB connection has been established successfully.");
                 sequelize
-                    .sync({ force: dbConfig.shouldForceDBSync })
+                    .sync({ force: db.shouldForceDBSync })
                     .then(() => {
-                        if (dbConfig.shouldForceDBSync && dbConfig.shouldSeedDemoData) {
-                            exec("npx sequelize-cli db:seed:all --debug", (error) => {
-                                if (error) {
-                                    logger.error(error);
-                                    reject(`DB sync and seed error: ${error}`);
-                                }
-                                logger.info("DB sync and seed has been successfully.");
-                                resolve();
-                            });
-                        } else {
-                            logger.info("DB sync has been successful.");
-                            resolve();
-                        }
+                        logger.info("DB sync has been successfull.");
+                        resolve();
                     })
                     .catch((error) => {
                         logger.error(error);
@@ -53,14 +35,14 @@ async function startDBConnection() {
                     });
             })
             .catch((error) => {
-                if (error instanceof ConnectionError && isFirstDbConnectionError) {
+                if (isFirstDbConnectionError) {
                     isFirstDbConnectionError = false;
                     exec("npx sequelize-cli db:create", (err) => {
                         if (err) {
-                            logger.error(err);
+                            logger.error(error);
                             reject(`Unable to create database: ${error}`);
                         } else {
-                            logger.info("Database successfully created.");
+                            logger.error(error);
                             resolve(startDBConnection());
                         }
                     });

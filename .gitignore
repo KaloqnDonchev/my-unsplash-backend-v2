@@ -1,8 +1,4 @@
 /node_modules
 /package-lock.json
 /config.js
-/keys
 /logs
-.env
-.DS_Store
-/*.zip

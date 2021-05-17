@@ -1,6 +1,3 @@
-const { possibleProductTypes, transferTypes } = require("../config.js").db;
+const imageMimeTypes = ["image/apng", "image/avif", "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp"];
 
-const nullDate = "1970-01-02 00:00:00.000";
-const defaultScope = "default";
-
-module.exports = { nullDate, possibleProductTypes, transferTypes, defaultScope };
+module.exports = imageMimeTypes;

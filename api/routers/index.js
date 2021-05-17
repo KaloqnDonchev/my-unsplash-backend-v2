@@ -1,5 +1,5 @@
 const routers = {
-    userRouter: require("./user.js"),
+    imageRouter: require("./image.js"),
     defaultRouter: require("./default.js")
 };
 
